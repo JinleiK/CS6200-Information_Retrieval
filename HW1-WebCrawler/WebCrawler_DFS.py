@@ -25,12 +25,15 @@ def crawler(url, key, depth_to_go):
         return
     soup = BeautifulSoup(html_text)
     title = soup.title.string
-    if title not in visited.keys():
+    if title not in visited:
         visited[title] = url  # add the valid URL to the visited list
-
+        print(url, depth_to_go)
     if depth_to_go > 1:
         for tag in soup.findAll('a', href=True):  # find all the URLs in current page
             link = tag['href']
+            pos = link.find("#")
+            if pos > 0:
+                link = link[:pos]
             if link.startswith("//"):
                 link = urlparse.urljoin(URL_HEAD, link)
             if link.startswith("/"):  # if the URL is relative, join it with its domain

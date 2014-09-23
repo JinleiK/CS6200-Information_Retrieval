@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 # Global Variables
 MAX_DEPTH = 3
 URL_HEAD = "http:"
+DOMAIN = "http://en.wikipedia.org"
 PREFIX = "http://en.wikipedia.org/wiki/"
 MAINPAGE = "http://en.wikipedia.org/wiki/main_page"
 urls = []  # to store the valid urls to crawl
@@ -25,7 +26,7 @@ def crawler(seed, key):
 
     while len(urls) > 0:
         maybe_url = urls.pop(0)
-        if not str(maybe_url).startswith("h"):
+        if str(maybe_url)[:1] != "h":
             depth = maybe_url
             maybe_url = urls.pop(0)
 
@@ -39,20 +40,21 @@ def crawler(seed, key):
             continue
         soup = BeautifulSoup(html_text)
         title = soup.title.string
-        if title not in visited.keys():
+        if title not in visited:
             visited[title] = url
             print(url, depth)
         if depth < MAX_DEPTH:
             urls.append(depth + 1)
             for tag in soup.findAll('a', href=True):
                 link = tag['href']
+                pos = link.find("#")
+                if pos > 0:
+                    link = link[:pos]
                 if link.startswith("//"):
                     link = urlparse.urljoin(URL_HEAD, link)
                 # print("//:" + link)
-                if link.startswith("/"):  # if the URL is relative, join it with its domain
-                    parsed_url = urlparse.urlparse(url)
-                    domain = '{uri.scheme}://{uri.netloc}'.format(uri=parsed_url)
-                    link = urlparse.urljoin(domain, link)
+                elif link.startswith("/"):  # if the URL is relative, join it with its domain
+                    link = urlparse.urljoin(DOMAIN, link)
                 link_rest = link[6:]
                 if ":" not in link_rest and PREFIX in link and link != MAINPAGE:
                     urls.append(link)
