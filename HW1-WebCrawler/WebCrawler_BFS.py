@@ -4,7 +4,7 @@
 __author__ = 'callie'
 
 import urlparse
-import urllib
+import urllib2
 import time
 import sys
 from bs4 import BeautifulSoup
@@ -16,7 +16,7 @@ DOMAIN = "http://en.wikipedia.org"
 PREFIX = "http://en.wikipedia.org/wiki/"
 MAINPAGE = "http://en.wikipedia.org/wiki/main_page"
 urls = []  # to store the valid urls to crawl
-visited = {}  # to store the valid visited urls
+visited = []  # to store the valid visited urls
 
 
 def crawler(seed, key):
@@ -31,17 +31,23 @@ def crawler(seed, key):
             maybe_url = urls.pop(0)
 
         url = maybe_url
+        if key == "" and depth > 2:
+            if url not in visited:
+                visited.append(url)
+                print(url, depth)
+            continue
         try:  # open the URL and get the page source
-            html_text = urllib.urlopen(url).read()
-        except urllib.IOError:  # if fail to open, stop
+            sock = urllib2.urlopen(url)
+            html_text = sock.read()
+            sock.close()
+        except:  # if fail to open, stop
             print("cannot open " + url)
             continue
         if key not in html_text.lower():
             continue
         soup = BeautifulSoup(html_text)
-        title = soup.title.string
-        if title not in visited:
-            visited[title] = url
+        if url not in visited:
+            visited.append(url)
             print(url, depth)
         if depth < MAX_DEPTH:
             urls.append(depth + 1)
@@ -56,8 +62,9 @@ def crawler(seed, key):
                 elif link.startswith("/"):  # if the URL is relative, join it with its domain
                     link = urlparse.urljoin(DOMAIN, link)
                 link_rest = link[6:]
-                if ":" not in link_rest and PREFIX in link and link != MAINPAGE:
+                if ":" not in link_rest and PREFIX in link and link.lower() != MAINPAGE:
                     urls.append(link)
+
 
 
 if __name__ == '__main__':
@@ -72,6 +79,6 @@ if __name__ == '__main__':
     else:
         print("Usage: seedPage [keyphrase]")
     print("---------------------")
-    for k, v in visited.items():
-        print(v)
+    # for v in visited:
+    #     print(v)
     print(time.time() - start_time)
