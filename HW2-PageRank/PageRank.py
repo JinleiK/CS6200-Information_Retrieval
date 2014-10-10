@@ -7,11 +7,15 @@ import operator
 class PageRank:
     def __init__(self, graph):
         self.graph = graph
+        # number of all pages
         self.N = len(graph.all_nodes)
+        # pagerank damping factor
         self.d = 0.85
+        # pagerank values for each page
         self.PR = dict()
         # perplexities for latest four iterations
         self.perplexities = [None, None, None, None]
+        # count the iterations
         self.counter = 0
 
     def rank(self, file_size):
@@ -75,16 +79,20 @@ class PageRank:
             h += p * math.log(p, 2)
         return -h
 
+    def sort_by_pr(self):
+        sort(self.PR)
+
     def sort_by_inlink(self):
         in_link_counts = dict()
         for k, v in self.graph.in_links.items():
             in_link_counts[k] = len(v)
-        sort(in_link_counts[:50])
+        sort(in_link_counts)
 
 
 def sort(dictionary):
+    # sort dictionary descendingly by keys
     sorted_nodes = sorted(dictionary.items(), key=operator.itemgetter(1), reverse=True)
-    print_pages(sorted_nodes[:50])
+    print_pages(sorted_nodes[:51])
 
 
 def print_pages(nodes):
