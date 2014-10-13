@@ -90,11 +90,11 @@ class PageRank:
 
 
 def sort(dictionary):
-    # sort dictionary descendingly by keys
+    # sort dictionary descendingly by values
     sorted_nodes = sorted(dictionary.items(), key=operator.itemgetter(1), reverse=True)
-    print_pages(sorted_nodes[:51])
+    print_pages(sorted_nodes[:50])
 
 
 def print_pages(nodes):
     for k, v in nodes:
-        print k + ":", v
+        print k + ":", "&" + str(v) + "\\\\"

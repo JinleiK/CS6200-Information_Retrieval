@@ -20,16 +20,15 @@ class PageGraph:
             if len(line) == 0:
                 break
             # split line by " " to pages
-            nodes = line.split(" ")
+            nodes = line.strip().split(' ')
             # add the first page of the line to all pages set
             self.all_nodes.append(nodes[0])
-            self.in_links[nodes[0]] = []
+            if nodes[0] not in self.in_links:
+                self.in_links[nodes[0]] = []
             for node in nodes[1:]:
                 # add the rest pages of the line to the in-links set
-                if nodes[0] in self.in_links:
-                    self.in_links[nodes[0]].append(node)
-                else:
-                    self.in_links[nodes[0]] = [node]
+                self.in_links[nodes[0]].append(node)
+
                 # count out-links for rest pages of the line
                 if node in self.out_links:
                     self.out_links[node] += 1
