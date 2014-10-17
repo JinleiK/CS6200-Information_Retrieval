@@ -17,4 +17,4 @@ if __name__ == '__main__':
         f = sys.argv[1]
         small_graph(f)
     else:
-        print "Usage: filePath"
+        print("Usage: PageRank <filePath>")

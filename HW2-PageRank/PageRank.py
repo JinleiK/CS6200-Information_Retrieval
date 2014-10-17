@@ -13,70 +13,69 @@ class PageRank:
         self.d = 0.85
         # pagerank values for each page
         self.PR = dict()
-        # perplexities for latest four iterations
-        self.perplexities = [None, None, None, None]
-        # count the iterations
+        # count the iterations that change in perplexity is less than 1
+        self.perp_counter = 0
+        # count the total iterations
         self.counter = 0
 
     def rank(self, file_size):
+        # record the previous perplexity value
+        pre_perp = 0.0
         new_pr = dict()
 
         for n in self.graph.all_nodes:
-            self.PR[n] = 1 / float(self.N)
+            self.PR[n] = 1.0 / self.N
+
         while not self.converged(file_size):
             # derive the perplexity first
-            perp = self.perplexity()
-            # update the perplexity list
-            self.perplexities.pop(0)
-            self.perplexities.append(perp)
+            cur_perp = self.perplexity()
+
+            if abs(cur_perp - pre_perp) < 1.0:
+                self.perp_counter += 1
+            else:
+                self.perp_counter = 0
+
             # output perplexity value obtained in each round for the in-links file
             if file_size == "big":
-                print perp
+                print(cur_perp)
 
-            sink_pr = 0
+            sink_pr = 0.0
             for s in self.graph.sink_nodes:
                 sink_pr += self.PR[s]
             for n in self.graph.all_nodes:
-                new_pr[n] = (1-self.d) / self.N
-                new_pr[n] += self.d * sink_pr / self.N
+                new_pr[n] = (1.0-self.d) / self.N
+                new_pr[n] += self.d*sink_pr / self.N
                 for m in self.graph.in_links[n]:
-                    # print m
-                    # print self.graph.out_links[m]
-                    # print self.PR[m]
-                    if m in self.PR:
-                        new_pr[n] += self.d * self.PR[m] / self.graph.out_links[m]
-            for n in self.graph.in_links.keys():
+                    new_pr[n] += self.d * self.PR[m] / self.graph.out_links_count[m]
+            for n in self.graph.all_nodes:
                 self.PR[n] = new_pr[n]
             self.counter += 1
+            pre_perp = cur_perp
             # list the PageRank values obtained for each of the six vertices
             # after 1, 10, and 100 iterations of the PageRank algorithm
             if file_size == "small" and (self.counter == 1 or self.counter == 10 or self.counter == 100):
-                print "Iteration", self.counter
+                print("Iteration", self.counter)
                 for n, p in self.PR.items():
-                    print n + ":", p
+                    print(n + ":", p)
 
         return self.PR
 
     def converged(self, file_size):
-        if None in self.perplexities:
-            return False
-
         if file_size == "small" and self.counter <= 100:
             return False
 
-        if file_size == "big":
-            for i in range(1, len(self.perplexities)):
-                if self.perplexities[i] - self.perplexities[i - 1] >= 1.0:
-                    return False
+        if file_size == "big" and self.perp_counter < 4:
+            return False
+
         return True
 
     def perplexity(self):
-        return math.pow(2, self.entropy())
+        return math.pow(2.0, self.entropy())
 
     def entropy(self):
-        h = 0
+        h = 0.0
         for n, p in self.PR.items():
-            h += p * math.log(p, 2)
+            h += p * math.log(p, 2.0)
         return -h
 
     def sort_by_pr(self):
@@ -97,4 +96,4 @@ def sort(dictionary):
 
 def print_pages(nodes):
     for k, v in nodes:
-        print k + ":", "&" + str(v) + "\\\\"
+        print(k + ":", v)
